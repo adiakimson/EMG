@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <stdio.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -88,41 +88,16 @@ int main(void)
   MX_GPIO_Init();
   MX_ADC_Init();
   /* USER CODE BEGIN 2 */
-  //kalibracja kanałów 1,2,3
-  HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
-  HAL_ADCEx_Calibration_Start(&hadc2, ADC_SINGLE_ENDED);
-  HAL_ADCEx_Calibration_Start(&hadc3, ADC_SINGLE_ENDED);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  HAL_ADC_Start(&hadc1);
-	  HAL_ADC_Start(&hadc2);
-	  HAL_ADC_Start(&hadc3);
-	  HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
-	  HAL_ADC_PollForConversion(&hadc2, HAL_MAX_DELAY);
-	  HAL_ADC_PollForConversion(&hadc3, HAL_MAX_DELAY);
-
-	  uint32_t value1 = HAL_ADC_GetValue(&hadc1);
-	  uint32_t value2 = HAL_ADC_GetValue(&hadc2);
-	  uint32_t value3 = HAL_ADC_GetValue(&hadc3);
-
-	  //sprawdzic wlasnosci ADC w tym mcu
-	  //float voltage = 3.3f * value1 / 4096.0f;
-	  //float voltage = 3.3f * value2 / 4096.0f;
-	  //float voltage = 3.3f * value3 / 4096.0f;
-
-	  printf("ADC = %lu\n", value1);
-	  printf("ADC = %lu\n", value2);
-	  printf("ADC = %lu\n", value3);
-
-	  HAL_Delay(250);
   }
   /* USER CODE END 3 */
 }
