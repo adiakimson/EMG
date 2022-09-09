@@ -63,14 +63,12 @@ void Error_Handler(void);
 #define EMG2_GPIO_Port GPIOA
 #define EMG3_Pin GPIO_PIN_2
 #define EMG3_GPIO_Port GPIOA
-#define CTS_Pin GPIO_PIN_11
-#define CTS_GPIO_Port GPIOA
-#define RTS_Pin GPIO_PIN_12
-#define RTS_GPIO_Port GPIOA
-#define TX_Pin GPIO_PIN_6
-#define TX_GPIO_Port GPIOB
-#define RX_Pin GPIO_PIN_7
-#define RX_GPIO_Port GPIOB
+#define START_BUTTON_Pin GPIO_PIN_10
+#define START_BUTTON_GPIO_Port GPIOA
+#define BT_TX_Pin GPIO_PIN_6
+#define BT_TX_GPIO_Port GPIOB
+#define BT_RX_Pin GPIO_PIN_7
+#define BT_RX_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
