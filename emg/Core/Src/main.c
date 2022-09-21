@@ -51,6 +51,7 @@ UART_HandleTypeDef huart2;
 uint16_t raw[3];
 uint16_t emg[3];
 uint8_t rxData;
+uint8_t txData;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -449,7 +450,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 	UNUSED(hadc);
 	HAL_GPIO_WritePin(GPIOA, EMG_3_Pin, GPIO_PIN_RESET);
 	}
-//funkcja callback do obsługi Bluetooth
+//funkcja callback RX do obsługi Bluetooth
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
   if(huart->Instance==USART1)
@@ -464,6 +465,22 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
     }
     HAL_UART_Receive_IT(&huart1,&rxData,1); // Enabling interrupt receive again
   }
+}
+//funkcja callback TX do obsługi Bluetooth
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+	if(huart->Instance==USART1)
+	{
+		if(txData!=0)
+		{
+			HAL_GPIO_WritePin(GPIOB, EMG_1_Pin, GPIO_PIN_SET);
+		}
+		else
+		{
+			HAL_GPIO_WritePin(GPIOB, EMG_1_Pin, GPIO_PIN_RESET);
+		}
+	}
+	HAL_UART_Transmit_IT(&huart1,&txData,1);
 }
 /* USER CODE END 4 */
 
