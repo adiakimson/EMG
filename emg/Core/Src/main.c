@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,8 +51,8 @@ UART_HandleTypeDef huart2;
 /* USER CODE BEGIN PV */
 uint16_t raw[3];
 uint16_t emg[3];
-uint8_t rxData;
-uint8_t txData;
+uint8_t rxEN;
+uint8_t txData[3];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -115,7 +116,7 @@ int main(void)
   MX_USART2_UART_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  HAL_UART_Receive_IT(&huart1,&rxData,1);
+  HAL_UART_Receive_IT(&huart1,&rxEN,1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -146,8 +147,28 @@ int main(void)
 	  HAL_Delay(1000);
 	  //przetworzenie danych
 
-	  //transmisja przez Bluetooth - sprawdzam czy działa zapalając diodę
-
+	  //transmisja przez Bluetooth - sprawdzam czy działa zapalając diodę (DZIALA)
+	  //wszystko działa - problem półsłowa
+	  if(HAL_GPIO_ReadPin(GPIOB, EMG_1_Pin)==1) //jeśli zapalona, czyli można przesłać dane
+	  {
+		  for(int i=0; i<3; i++)
+		  {
+			  txData[i]=emg[i];
+		  }
+		  HAL_UART_Transmit_IT(&huart1,&txData[0],1);
+		  printf("BT_TX EMG_1 mV: %d\r\n",txData[0]);
+		  HAL_Delay(1000);
+		  HAL_UART_Transmit_IT(&huart1,&txData[1],1);
+		  printf("BT_TX EMG_2 mV: %d\r\n",txData[1]);
+		  HAL_Delay(1000);
+		  HAL_UART_Transmit_IT(&huart1,&txData[2],1);
+		  printf("BT_TX EMG_3 mV: %d\r\n",txData[2]);
+		  HAL_Delay(1000);
+	  }
+	  else
+	  {
+		  printf("NO BT TRANSMISSION\r\n");
+	  }
   }
   /* USER CODE END 3 */
 }
@@ -415,17 +436,10 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, RX_Pin|TX_Pin|EMG_1_Pin|EMG_2_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(EMG_3_GPIO_Port, EMG_3_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : RX_Pin TX_Pin EMG_1_Pin EMG_2_Pin */
-  GPIO_InitStruct.Pin = RX_Pin|TX_Pin|EMG_1_Pin|EMG_2_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, EMG_1_Pin|EMG_2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : EMG_3_Pin */
   GPIO_InitStruct.Pin = EMG_3_Pin;
@@ -433,6 +447,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(EMG_3_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : EMG_1_Pin EMG_2_Pin */
+  GPIO_InitStruct.Pin = EMG_1_Pin|EMG_2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
 }
 
@@ -450,37 +471,22 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 	UNUSED(hadc);
 	HAL_GPIO_WritePin(GPIOA, EMG_3_Pin, GPIO_PIN_RESET);
 	}
+
 //funkcja callback RX do obsługi Bluetooth
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
   if(huart->Instance==USART1)
   {
-    if(rxData==78) // Ascii value of 'N' is 78 (N for NO)
+    if(rxEN==78) // Ascii value of 'N' is 78 (N for NO)
     {
-    	HAL_GPIO_WritePin(GPIOB, EMG_2_Pin, GPIO_PIN_RESET);
+    	HAL_GPIO_WritePin(GPIOB, EMG_1_Pin, 0);
     }
-    else if (rxData==89) // Ascii value of 'Y' is 89 (Y for YES)
+    else if (rxEN==89) // Ascii value of 'Y' is 89 (Y for YES)
     {
-    	HAL_GPIO_WritePin(GPIOB, EMG_2_Pin, GPIO_PIN_SET);
+    	HAL_GPIO_WritePin(GPIOB, EMG_1_Pin, 1);
     }
-    HAL_UART_Receive_IT(&huart1,&rxData,1); // Enabling interrupt receive again
+    HAL_UART_Receive_IT(&huart1,&rxEN,1); // Enabling interrupt receive again
   }
-}
-//funkcja callback TX do obsługi Bluetooth
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
-{
-	if(huart->Instance==USART1)
-	{
-		if(txData!=0)
-		{
-			HAL_GPIO_WritePin(GPIOB, EMG_1_Pin, GPIO_PIN_SET);
-		}
-		else
-		{
-			HAL_GPIO_WritePin(GPIOB, EMG_1_Pin, GPIO_PIN_RESET);
-		}
-	}
-	HAL_UART_Transmit_IT(&huart1,&txData,1);
 }
 /* USER CODE END 4 */
 
