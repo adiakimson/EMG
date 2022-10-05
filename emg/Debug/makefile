@@ -34,34 +34,34 @@ $(wildcard ../makefile.init) \
 $(wildcard ../makefile.targets) \
 
 
-BUILD_ARTIFACT_NAME := pd1
+BUILD_ARTIFACT_NAME := emg
 BUILD_ARTIFACT_EXTENSION := elf
 BUILD_ARTIFACT_PREFIX :=
 BUILD_ARTIFACT := $(BUILD_ARTIFACT_PREFIX)$(BUILD_ARTIFACT_NAME)$(if $(BUILD_ARTIFACT_EXTENSION),.$(BUILD_ARTIFACT_EXTENSION),)
 
 # Add inputs and outputs from these tool invocations to the build variables 
 EXECUTABLES += \
-pd1.elf \
+emg.elf \
 
 MAP_FILES += \
-pd1.map \
+emg.map \
 
 SIZE_OUTPUT += \
 default.size.stdout \
 
 OBJDUMP_LIST += \
-pd1.list \
+emg.list \
 
 
 # All Target
 all: main-build
 
 # Main-build Target
-main-build: pd1.elf secondary-outputs
+main-build: emg.elf secondary-outputs
 
 # Tool invocations
-pd1.elf pd1.map: $(OBJS) $(USER_OBJS) C:\Users\Karo\STM32CubeIDE\workspace_1.10.1\pd1\STM32F042K6TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "pd1.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0 -T"C:\Users\Karo\STM32CubeIDE\workspace_1.10.1\pd1\STM32F042K6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="pd1.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+emg.elf emg.map: $(OBJS) $(USER_OBJS) C:\Users\Karo\STM32CubeIDE\workspace_1.10.0\emg\STM32F042K6TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "emg.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0 -T"C:\Users\Karo\STM32CubeIDE\workspace_1.10.0\emg\STM32F042K6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="emg.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -70,14 +70,14 @@ default.size.stdout: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
 	@echo 'Finished building: $@'
 	@echo ' '
 
-pd1.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "pd1.list"
+emg.list: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-objdump -h -S $(EXECUTABLES) > "emg.list"
 	@echo 'Finished building: $@'
 	@echo ' '
 
 # Other Targets
 clean:
-	-$(RM) default.size.stdout pd1.elf pd1.list pd1.map
+	-$(RM) default.size.stdout emg.elf emg.list emg.map
 	-@echo ' '
 
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST)
