@@ -57,14 +57,18 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define EMG1_Pin GPIO_PIN_0
-#define EMG1_GPIO_Port GPIOA
-#define EMG2_Pin GPIO_PIN_1
-#define EMG2_GPIO_Port GPIOA
-#define EMG3_Pin GPIO_PIN_2
-#define EMG3_GPIO_Port GPIOA
-#define START_BUTTON_Pin GPIO_PIN_10
-#define START_BUTTON_GPIO_Port GPIOA
+#define CH_3_Pin GPIO_PIN_4
+#define CH_3_GPIO_Port GPIOA
+#define CH_2_Pin GPIO_PIN_5
+#define CH_2_GPIO_Port GPIOA
+#define CH_1_Pin GPIO_PIN_6
+#define CH_1_GPIO_Port GPIOA
+#define EMG_3_Pin GPIO_PIN_8
+#define EMG_3_GPIO_Port GPIOA
+#define EMG_1_Pin GPIO_PIN_3
+#define EMG_1_GPIO_Port GPIOB
+#define EMG_2_Pin GPIO_PIN_4
+#define EMG_2_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
 
 /* USER CODE END Private defines */
