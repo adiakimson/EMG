@@ -16,6 +16,7 @@ Dma.ADC.0.RequestParameters=Instance,Direction,PeriphInc,MemInc,PeriphDataAlignm
 Dma.Request0=ADC
 Dma.RequestsNb=1
 File.Version=6
+GPIO.groupedBy=Group By Peripherals
 KeepUserPlacement=false
 Mcu.CPN=STM32F042K6T6
 Mcu.Family=STM32F0

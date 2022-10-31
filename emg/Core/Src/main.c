@@ -123,32 +123,31 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  //ten interwal sluzy do zmiany czestosci wysylania sygnalu
+  const int interval = 1000;
   HAL_TIM_Base_Start_IT(&htim1);
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  //surowe dane z przetwornika - pokazuje tylko to co pobiera się co 1s
-	  printf("Ch1: %d\r\n",raw[0]);
-	  HAL_Delay(1000);
-	  printf("Ch2: %d\r\n",raw[1]);
-	  HAL_Delay(1000);
-	  printf("Ch3: %d\r\n",raw[2]);
-	  HAL_Delay(1000);
+	  //surowe dane z przetwornika - pokazuje tylko to co pobiera się co interval
+	  //-------------------------------------------------------------------
 	  //dane EMG podane w mV
 	  emg[0]=raw[0]*3300/4095;
 	  emg[1]=raw[1]*3300/4095;
 	  emg[2]=raw[2]*3300/4095;
 	  //wyswietlenie danych w mV
-	  printf("EMG_1 mV: %d\r\n",emg[0]);
-	  HAL_Delay(1000);
-	  printf("EMG_2 mV: %d\r\n",emg[1]);
-	  HAL_Delay(1000);
-	  printf("EMG_3 mV: %d\r\n",emg[2]);
-	  HAL_Delay(1000);
-	  //przetworzenie danych
-
+	  printf("%d\r\n",emg[0]);
+	  HAL_Delay(interval);
+	  printf("%d\r\n",emg[1]);
+	  HAL_Delay(interval);
+	  printf("%d\r\n",emg[2]);
+	  HAL_Delay(interval);
+	  //-------------------------------------------------------------------
+	  //ZAKOMENTOWANE NA POTRZEBY TESTÓW APLIKACJI QT
+	  /*
+	  //-------------------------------------------------------------------
 	  //transmisja przez Bluetooth - sprawdzam czy działa zapalając diodę (DZIALA)
 	  //wszystko działa - problem półsłowa
 	  if(HAL_GPIO_ReadPin(GPIOB, EMG_1_Pin)==1) //jeśli zapalona, czyli można przesłać dane
@@ -160,13 +159,13 @@ int main(void)
 		  }
 		  HAL_UART_Transmit_IT(&huart1,&txData[0],1);
 		  printf("BT_TX_HW EMG_1 mV: %d\r\n",txData[0]);
-		  HAL_Delay(1000);
+		  HAL_Delay(interval);
 		  HAL_UART_Transmit_IT(&huart1,&txData[1],1);
 		  printf("BT_TX_HW EMG_2 mV: %d\r\n",txData[1]);
-		  HAL_Delay(1000);
+		  HAL_Delay(interval);
 		  HAL_UART_Transmit_IT(&huart1,&txData[2],1);
 		  printf("BT_TX_HW EMG_3 mV: %d\r\n",txData[2]);
-		  HAL_Delay(1000);
+		  HAL_Delay(interval);
 		  //przesyła całe słowo
 		  //dzielenie danych emg 16bit na dwie liczby 8bit
 		  int j=0;
@@ -180,32 +179,23 @@ int main(void)
 			  j=j+2;
 		  }
 		  for(int i=0; i<6; i++)
-		  		  {
-		  			  txDatanew[i]=emg_halfword[i];
-		  		  }
-		  		  HAL_UART_Transmit_IT(&huart1,&txDatanew[0],1);
-		  		  printf("BT_TX_HW_LOW EMG_1 mV: %d\r\n",txDatanew[0]);
-		  		  HAL_Delay(1000);
-		  		  HAL_UART_Transmit_IT(&huart1,&txDatanew[1],1);
-		  		  printf("BT_TX_HW_HIGH EMG_2 mV: %d\r\n",txDatanew[1]);
-		  		  HAL_Delay(1000);
-		  		  HAL_UART_Transmit_IT(&huart1,&txDatanew[2],1);
-		  		  printf("BT_TX_HW_LOW EMG_3 mV: %d\r\n",txDatanew[2]);
-		  		  HAL_Delay(1000);
-		  		  HAL_UART_Transmit_IT(&huart1,&txDatanew[3],1);
-		  		  printf("BT_TX_HW_HIGH EMG_3 mV: %d\r\n",txDatanew[3]);
-		  		  HAL_Delay(1000);
-		  		  HAL_UART_Transmit_IT(&huart1,&txDatanew[4],1);
-		  		  printf("BT_TX_HW_LOW EMG_3 mV: %d\r\n",txDatanew[4]);
-		  		  HAL_Delay(1000);
-		  		  HAL_UART_Transmit_IT(&huart1,&txDatanew[5],1);
-		  		  printf("BT_TX_HW_HIGH EMG_3 mV: %d\r\n",txDatanew[5]);
-		  		  HAL_Delay(1000);
+		  {
+			  txDatanew[i]=emg_halfword[i];
+		  }
+		  for (int i = 0; i < 6; ++i)
+		  {
+			  HAL_UART_Transmit_IT(&huart1,&txDatanew[i%2],1);
+			  printf("BT_TX_HW_%s EMG_%d mV: %d\r\n", i%2==0 ? "LOW" :"HIGH", i/2+1, txDatanew[i]);
+			  HAL_Delay(interval);
+		  }
 	  }
 	  else
 	  {
 		  printf("NO BT TRANSMISSION\r\n");
 	  }
+	  //---------------------------------------------------------------------
+	   */
+
   }
   /* USER CODE END 3 */
 }
