@@ -47,14 +47,16 @@ TIM_HandleTypeDef htim1;
 
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
+DMA_HandleTypeDef hdma_usart1_tx;
 
 /* USER CODE BEGIN PV */
 uint16_t raw[3];
 uint16_t emg[3];
-uint8_t emg_halfword[6];
 uint8_t rxEN;
-uint8_t txData[3];
-uint8_t txDatanew[6];
+uint16_t txData[3];
+uint8_t txDataToSend[6];
+char napis[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+char znaki_konca[3] = {13, 10, 0};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -118,84 +120,99 @@ int main(void)
   MX_USART2_UART_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+  const int interval = 10;
+  HAL_TIM_Base_Start_IT(&htim1);
   HAL_UART_Receive_IT(&huart1,&rxEN,1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  //ten interwal sluzy do zmiany czestosci wysylania sygnalu
-  const int interval = 1000;
-  HAL_TIM_Base_Start_IT(&htim1);
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  //-------------------------------------------------------------------
+	  //fast debugging serialport - uart2 (porty A2 RX i A7 TX)
+	  //fast debugging bluetooth - uart1 (porty podpisane jako RX i TX)
+	  //-------------------------------------------------------------------
+//		  itoa(raw[0],napis,10);
+//		  HAL_UART_Transmit(&huart2,napis,strlen(napis),100);
+//		  HAL_Delay(8);
+//		  HAL_UART_Transmit(&huart2,znaki_konca,strlen(znaki_konca),100);
+//		  HAL_Delay(4);
+//	  continue;
+	  //-------------------------------------------------------------------
 	  //surowe dane z przetwornika - pokazuje tylko to co pobiera się co interval
 	  //-------------------------------------------------------------------
 	  //dane EMG podane w mV
-	  emg[0]=raw[0]*3300/4095;
+	  //-------------------------------------------------------------------
+	  emg[0]=raw[0]*3300/4095; //16bit
 	  emg[1]=raw[1]*3300/4095;
 	  emg[2]=raw[2]*3300/4095;
+	  for(int i=0; i<6; i++)
+	  {
+		  if(i%2==0)
+		  {
+			  txDataToSend[i]=(emg[i] & 0xff00) >> 8;
+			  itoa(txDataToSend[i],napis,10);
+			  HAL_UART_Transmit(&huart2,napis,strlen(napis),100);
+		  }
+		  else
+		  {
+			  txDataToSend[i]=(emg[i] & 0xff);
+			  itoa(txDataToSend[i],napis,10);
+			  HAL_UART_Transmit(&huart2,napis,strlen(napis),100);
+		  }
+	  }
+	  continue;
+	  // ------------------------------------------------------
+//	  uint8_t emg_to_send[sizeof(emg) * sizeof(emg[0])];
+//
+//	  for (int i = 0; i < sizeof(emg); ++i) {
+//		  uint8_t* x = (uint8_t*)(&emg[i]);
+//		  emg_to_send[i*2] = *x;
+//		  emg_to_send[i*2+1] = *(x+1);
+//	  }
+//
+//	  for (int i = 0; i < sizeof(emg_to_send); ++i) {
+//		  HAL_UART_Transmit(&huart2, &(emg_to_send[i]), 1, 100);
+//	  }
+//	  continue;
+	  // ------------------------------------------------------
+
 	  //wyswietlenie danych w mV
-	  printf("%d\r\n",emg[0]);
-	  HAL_Delay(interval);
-	  printf("%d\r\n",emg[1]);
-	  HAL_Delay(interval);
-	  printf("%d\r\n",emg[2]);
-	  HAL_Delay(interval);
+//	  printf("%d\r\n",emg[0]);
+//	  HAL_Delay(interval);
+//	  printf("%d\r\n",emg[1]);
+//	  HAL_Delay(interval);
+//	  printf("%d\r\n",emg[2]);
+//	  HAL_Delay(interval);
 	  //-------------------------------------------------------------------
 	  //ZAKOMENTOWANE NA POTRZEBY TESTÓW APLIKACJI QT
-	  /*
 	  //-------------------------------------------------------------------
 	  //transmisja przez Bluetooth - sprawdzam czy działa zapalając diodę (DZIALA)
-	  //wszystko działa - problem półsłowa
-	  if(HAL_GPIO_ReadPin(GPIOB, EMG_1_Pin)==1) //jeśli zapalona, czyli można przesłać dane
+	  if(HAL_GPIO_ReadPin(GPIOB, EMG_1_Pin)==1) //jeśli mierzy kanał 1, czyli można przesłać dane
 	  {
-		  //przesyła pół słowa
 		  for(int i=0; i<3; i++)
 		  {
 			  txData[i]=emg[i];
 		  }
-		  HAL_UART_Transmit_IT(&huart1,&txData[0],1);
-		  printf("BT_TX_HW EMG_1 mV: %d\r\n",txData[0]);
+		  HAL_UART_Transmit_IT(&huart1,&txData[0],2);
+		  //printf("BT_TX EMG_1 mV: %d\r\n",txData[0]);
 		  HAL_Delay(interval);
-		  HAL_UART_Transmit_IT(&huart1,&txData[1],1);
-		  printf("BT_TX_HW EMG_2 mV: %d\r\n",txData[1]);
+		  HAL_UART_Transmit_IT(&huart1,&txData[1],2);
+		  //printf("BT_TX EMG_2 mV: %d\r\n",txData[1]);
 		  HAL_Delay(interval);
-		  HAL_UART_Transmit_IT(&huart1,&txData[2],1);
-		  printf("BT_TX_HW EMG_3 mV: %d\r\n",txData[2]);
+		  HAL_UART_Transmit_IT(&huart1,&txData[2],2);
+		  //printf("BT_TX EMG_3 mV: %d\r\n",txData[2]);
 		  HAL_Delay(interval);
-		  //przesyła całe słowo
-		  //dzielenie danych emg 16bit na dwie liczby 8bit
-		  int j=0;
-		  for(int i=0; i<3; i++)
-		  {
-			  //pierwsze półsłowo (LOW)
-			  emg_halfword[j]=emg[i]&0xff;
-			  //drugie półsłowo (HIGH)
-			  emg_halfword[j+1]=emg[i]>>8;
-			  //inkrementacja zmiennej j
-			  j=j+2;
-		  }
-		  for(int i=0; i<6; i++)
-		  {
-			  txDatanew[i]=emg_halfword[i];
-		  }
-		  for (int i = 0; i < 6; ++i)
-		  {
-			  HAL_UART_Transmit_IT(&huart1,&txDatanew[i%2],1);
-			  printf("BT_TX_HW_%s EMG_%d mV: %d\r\n", i%2==0 ? "LOW" :"HIGH", i/2+1, txDatanew[i]);
-			  HAL_Delay(interval);
-		  }
 	  }
 	  else
 	  {
 		  printf("NO BT TRANSMISSION\r\n");
 	  }
 	  //---------------------------------------------------------------------
-	   */
-
   }
   /* USER CODE END 3 */
 }
@@ -336,7 +353,7 @@ static void MX_TIM1_Init(void)
 
   /* USER CODE END TIM1_Init 1 */
   htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 0;
+  htim1.Init.Prescaler = 199;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim1.Init.Period = 16000-1;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -379,7 +396,7 @@ static void MX_USART1_UART_Init(void)
 
   /* USER CODE END USART1_Init 1 */
   huart1.Instance = USART1;
-  huart1.Init.BaudRate = 9600;
+  huart1.Init.BaudRate = 115200;
   huart1.Init.WordLength = UART_WORDLENGTH_8B;
   huart1.Init.StopBits = UART_STOPBITS_1;
   huart1.Init.Parity = UART_PARITY_NONE;
@@ -414,7 +431,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 38400;
+  huart2.Init.BaudRate = 115200;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
@@ -446,6 +463,9 @@ static void MX_DMA_Init(void)
   /* DMA1_Channel1_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+  /* DMA1_Channel2_3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel2_3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel2_3_IRQn);
 
 }
 
@@ -488,16 +508,8 @@ static void MX_GPIO_Init(void)
 //funkcje callback do obsługi ADC
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim1)
 {
-	//zaświecenie diodą jako potwierdzenie odczytu danych
-  HAL_GPIO_WritePin(GPIOA, EMG_3_Pin, GPIO_PIN_SET);
-  HAL_ADC_Start_DMA(&hadc, (uint32_t*)raw,3);
+  HAL_ADC_Start_DMA(&hadc, (uint32_t*)raw, 3);
 }
-
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
-{
-	UNUSED(hadc);
-	HAL_GPIO_WritePin(GPIOA, EMG_3_Pin, GPIO_PIN_RESET);
-	}
 
 //funkcja callback RX do obsługi Bluetooth
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
